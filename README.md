@@ -1,46 +1,99 @@
-# Getting Started with Create React App and Redux
+![Profilance Group](https://static.tildacdn.com/tild3638-3338-4136-b038-313132306438/Group_640.svg "Profilance Group")
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app), using the [Redux](https://redux.js.org/) and [Redux Toolkit](https://redux-toolkit.js.org/) template.
+# Тестовое задание для frontend-разработчика Profilance Group
 
-## Available Scripts
+Необходимо разработать клиент для сервиса сокращения ссылок.
 
-In the project directory, you can run:
+Прототип внешнего вида доступен по [ссылке](https://disk.yandex.ru/i/LvQf6WK8zfayjQ) 
 
-### `npm start`
+1) Должна быть реализована форма создания сокращенной ссылки. Запрос `shorten_url`.
+2) Все ошибки должны обрабатываться, должна быть реализована валидация на клиенте.
+3) Раздел "Мои ссылки" должен формироваться из ссылок созданных в течение пользовательского сеанса на основе ответов сервера (он сбрасывается после обновления страницы)
+4) Для формирования раздела "Список ссылок" используется запрос `short_urls`. Должна быть реализована пагинация этого списка.
+5) Количество переходов по ссылке должно обновляться в реальном времени
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+## Требования к клиентской части
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+1) Адаптивная вестка с использованием БЭМ и SASS/SCSS
+2) React + Redux + Websoket
 
-### `npm test`
+## Сервер
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### GraphQL API
 
-### `npm run build`
+Endpoint: http://test-task.profilancegroup-tech.com/graphql
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+Схема:
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```graphql
+"Список коротких ссылок."
+short_urls(
+    url: String @rules(apply: ["string", "max: 2048", "url"]) @eq
+    hash: String @rules(apply: ["string", "size: 8"]) @eq
+): [ShortUrl] @paginate(defaultCount: 20)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+"Сокращение ссылки."
+shorten_url(
+    url: String @rules(apply: ["string", "max: 2048", "url"])
+): short_url_result
 
-### `npm run eject`
+"Короткая ссылка."
+type ShortUrl {
+    id: ID
+    url: String
+    short_url: String
+    clicks: Int
+    created_at: DateTime
+    updated_at: DateTime
+}
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+"Результат выполнения операции над короткой ссылкой."
+type short_url_result {
+    short_url: ShortUrl
+    operation_status: operation_status
+}
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+"Информация о пагинации. Содержится в поле paginatorInfo рядом с data, например в short_urls."
+type PaginatorInfo {
+  "Number of items in the current page."
+  count: Int!
+  "Index of the current page."
+  currentPage: Int!
+  "Index of the first item in the current page."
+  firstItem: Int
+  "Are there more pages after this one?"
+  hasMorePages: Boolean!
+  "Index of the last item in the current page."
+  lastItem: Int
+  "Index of the last available page."
+  lastPage: Int!
+  "Number of items per page."
+  perPage: Int!
+  "Number of total available items."
+  total: Int!
+}
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+```
+### Websockets
 
-## Learn More
+Endpoint: http://test-task.profilancegroup-tech.com:6002
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Канал: `btti_database_short_urls`
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+Событие: `new_click`
+
+Данные события содержат полную модель короткой ссылки - https://i.imgur.com/2rwGyJ8.png.
+
+Реализация подписки на события на клиенте https://laravel.com/docs/9.x/broadcasting#client-side-installation
+
+Конфигурация Echo
+
+```javascript
+{
+    const echo = new Echo({
+      broadcaster: 'socket.io',
+      host: 'http://test-task.profilancegroup-tech.com:6001'
+    });
+}
+```
