@@ -1,6 +1,74 @@
-import React from "react";
+import React, {useState} from "react";
+import {useQuery, gql, useMutation} from '@apollo/client';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
 
-export const LinksApp = () => {
+const GET_URLS = gql`
+  query short_urls($first: Int, $page: Int) {
+      short_urls(first: $first, page: $page) {
+        data {
+            id, url, short_url, clicks
+        }
+        paginatorInfo {
+            count, currentPage, firstItem, hasMorePages, lastItem, lastPage, perPage, total
+        }
+      }
+   }
+`;
+
+/*const PUT_SHORT_URL = gql`
+    mutation shorten_url($url: String) {
+        shorten_url(url: $url) {
+            short_url {
+                id, url, short_url, clicks
+            }
+        }
+    }
+`;*/
+const PUT_SHORT_URL = gql`
+    mutation shorten_url($url: String @rules(apply: ["string", "max: 2048", "url"]) @eq) {
+        shorten_url(url: $url) {
+            short_url {
+                id, url, short_url, clicks
+            }
+        }
+    }
+`;
+
+window.Echo = new Echo({
+    broadcaster: 'socket.io',
+    host: 'http://test-task.profilancegroup-tech.com:6001',
+});
+
+export const LinksApp = (props) => {
+
+    const {data, loading, error} = useQuery(GET_URLS,
+        {
+            variables: {first: 10, page: 1}
+        }
+    )
+    const getUrls = () => {
+        if (!loading) {
+            console.log(data)
+        }
+    }
+    //getUrls()
+
+    let [myUrl, setMyUrl] = useState('')
+    const [newShortcut] = useMutation(PUT_SHORT_URL)
+    const getShortcut = () => {
+        newShortcut({
+            variables: {
+                input: {
+                    myUrl
+                }
+            }
+        }).then(({data}) => {
+            console.log(data)
+        })
+    }
+
+    let [myLinks, setMyLinks] = useState([])
 
     return (
         <div className={"main-wrapper"}>
@@ -15,8 +83,23 @@ export const LinksApp = () => {
                 </div>
 
                 <div className={"form__input"}>
-                    <input type="text"/>
-                    <button>Сократить</button>
+                    <input type="text"
+                           id={"url"}
+                           value={myUrl}
+                           onChange={
+                               (e) => {
+                                   setMyUrl(e.currentTarget.value)
+                               }}
+                    />
+
+                    <button
+                        onClick={
+                            (e) => {
+                                e.preventDefault()
+                                getShortcut()
+                            }}
+                    >Сократить
+                    </button>
                 </div>
 
                 <div className={"form__result"}>
