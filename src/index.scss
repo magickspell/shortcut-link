@@ -48,7 +48,7 @@ code {
   border: 1px solid gray;
   width: 90%;
   box-sizing: border-box;
-  max-height: 100px;
+  max-height: 120px;
 
   .form__input {
     display: flex;
@@ -79,6 +79,7 @@ code {
   }
 }
 
+/*списки ссылок*/
 .links {
   grid-column-start: 1;
   grid-column-end: 2;
@@ -117,6 +118,10 @@ code {
     box-sizing: border-box;
     text-align: center;
 
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
     p {
       width: 100%;
       box-sizing: border-box;
@@ -145,7 +150,7 @@ code {
 
   }
 }
-
+/* пагинация */
 .links-list__pagination {
   margin: 10px 0;
   display: grid;
@@ -168,4 +173,16 @@ code {
       transition: 0.3s;
     }
   }
+}
+
+.item-link__counter {
+  border: 1px solid lightskyblue;
+  border-radius: 24px;
+  background: lightskyblue;
+  font-size: 12px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
