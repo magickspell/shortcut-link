@@ -1,33 +1,5 @@
 import React, {useEffect, useState} from "react";
 import {useQuery, gql, useMutation} from '@apollo/client';
-import Echo from 'laravel-echo';
-import Pusher from 'pusher-js';
-
-//let socket = new WebSocket("wss://javascript.info/article/websocket/demo/hello");
-//const ws = new WebSocket('ws://test-task.profilancegroup-tech.com');
-
-/*
-1. кеширование графкл и пагинация
-2. почемуто не подключается сокет
-3. почему то не создается ссылка
-*/
-
-//window.Pusher = Pusher;
-/*window.Echo = new Echo({
-    broadcaster: 'pusher',
-    //key: 'random123key',
-    key: '',
-    wsHost: 'test-task.profilancegroup-tech.com',
-    //cluster: 'test-task.profilancegroup-tech.com',
-    wsPort: 6002,
-    disableStats: false,
-    encrypted: false,
-    forceTLS: false,
-});
-window.Echo.channel('btti_database_short_urls').listen
-('new_click', (e) => {
-    console.log(e);
-})*/
 
 const GET_URLS = gql`
   query short_urls($first: Int, $page: Int) {
@@ -52,7 +24,7 @@ const PUT_SHORT_URL = gql`
     }
 `;
 
-export const LinksApp = (props) => {
+export const LinksApp = () => {
 
     /*пагинация*/
     let [currentPage, setCurrentPage] = useState(1)
@@ -98,7 +70,6 @@ export const LinksApp = (props) => {
         return result
     }
     useEffect((e) => {
-        //e.preventDefault()
         if (!loading) {
             setPages(
                 pageSetup(currentPage, 1, '...', 10)
@@ -149,18 +120,6 @@ export const LinksApp = (props) => {
         }
     }
     useEffect((e) => {
-        /*if (myUrl.length > 1) {
-            //shortenURL(myUrl)
-            let newArr = myLinks.map(i => i)
-            if (newArr.some((i) => i.url === data.short_urls.data.url)) {
-                newArr.map(i => {
-                    if (i.url === data.short_urls.data.url) {
-                        //i.clicks = data.shorten_url.short_url.clicks
-                        i.clicks = data.short_urls.data.clicks
-                    }
-                })
-            }
-        }*/
         if (!loading) {
             let newArr = myLinks.map(i => i)
             data.short_urls.data.map((i,n) => {
@@ -175,7 +134,6 @@ export const LinksApp = (props) => {
             })
         }
     }, [data])
-
 
 
     return (
